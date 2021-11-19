@@ -1,0 +1,41 @@
+LGG150                  LGG150 chromosomes 7-10
+QDNAseq-package         Package QDNAseq
+QDNAseqCopyNumbers      Container for QDNAseq read count data
+QDNAseqReadCounts       Container for QDNAseq read count data
+QDNAseqSignals          A parent class for containers of QDNAseq data
+addPhenodata            Adds phenotype data from a file to a
+                        QDNAseqReadCounts or a QDNAseqCopyNumbers
+                        object
+applyFilters            Adjusts the filtering on which bins are used
+binReadCounts           Calculate binned read counts from a set of BAM
+                        files
+callBins                Call aberrations from segmented copy number
+                        data
+compareToReference      Divide binned read counts with those of
+                        reference samples
+correctBins             Correct binned read counts for GC content and
+                        mappability
+createBins              Builds bin annotation data for a particular bin
+                        size
+downloadBinAnnotations
+                        Defunct functions in package 'QDNAseq'
+estimateCorrection      Estimate correction to read counts for GC
+                        content and mappability
+exportBins              Exports to a file
+frequencyPlot           Plot copy number aberration frequencies
+getBinAnnotations       Gets bin annotation data for a particular bin
+                        size
+highlightFilters        Highlights data points in a plotted profile to
+                        evaluate filtering
+isobarPlot              Plot median read counts as a function of GC
+                        content and mappability
+makeCgh                 Constructs a 'cghRaw', 'cghSeg', or 'cghCall'
+                        object
+noisePlot               Plot noise as a function of sequence depth
+normalizeBins           Normalizes binned read counts
+normalizeSegmentedBins
+                        Normalize segmented bins
+plot                    Plot copy number profile
+poolRuns                Pools binned read counts across samples
+segmentBins             Segments normalized copy number data
+smoothOutlierBins       Smooth outlier bins after normalization

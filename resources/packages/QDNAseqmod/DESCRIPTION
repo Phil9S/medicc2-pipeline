@@ -1,0 +1,30 @@
+Package: QDNAseqmod
+Version: 1.21.0
+Date: 2017-04-14
+Title: Quantitative DNA sequencing for chromosomal aberrations
+Author: Ilari Scheinin [aut], Daoud Sie [aut, cre], Henrik Bengtsson [aut]
+Maintainer: Daoud Sie <d.sie@vumc.nl>
+Depends: R (>= 3.1.0)
+Imports: graphics, methods, stats, utils, Biobase (>= 2.18.0), CGHbase
+        (>= 1.18.0), CGHcall (>= 2.18.0), DNAcopy (>= 1.32.0),
+        GenomicRanges (>= 1.20), IRanges (>= 2.2), matrixStats (>=
+        0.50.2), R.utils (>= 2.3.0), Rsamtools (>= 1.20), BiocParallel
+        (>= 1.6.6),
+Suggests: BiocStyle (>= 1.8.0), BSgenome (>= 1.38.0), digest (>=
+        0.6.8), GenomeInfoDb (>= 1.6.0), future (>= 0.14.0), R.cache
+        (>= 0.12.0)
+Description: Quantitative DNA sequencing for chromosomal aberrations.
+        The genome is divided into non-overlapping fixed-sized bins, number of
+        sequence reads in each counted, adjusted with a simultaneous
+        two-dimensional loess correction for sequence mappability and GC
+        content, and filtered to remove spurious regions in the genome.
+        Downstream steps of segmentation and calling are also implemented via
+        packages DNAcopy and CGHcall, respectively.
+biocViews: CopyNumberVariation, DNASeq, Genetics, GenomeAnnotation,
+        Preprocessing, QualityControl, Sequencing
+License: GPL
+URL: https://github.com/ccagc/QDNAseq
+BugReports: https://github.com/ccagc/QDNAseq/issues
+NeedsCompilation: no
+Packaged: 2019-09-05 08:54:29 UTC; macint01
+Built: R 3.4.0; ; 2019-09-05 08:54:36 UTC; unix
