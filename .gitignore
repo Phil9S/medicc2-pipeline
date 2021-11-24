@@ -37,3 +37,9 @@ vignettes/*.pdf
 
 # R Environment Variables
 .Renviron
+
+# job submission files
+slurm-*
+
+# LFS temp files
+.nfs*
