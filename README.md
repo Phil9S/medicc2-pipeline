@@ -1,8 +1,26 @@
 # medicc2-pipeline
 
-## Authors
+### Authors
 
 * Philip Smith (@phil9s)
+
+## Description
+
+*Summary*
+
+Reconstruct phylogenetic trees based on minimum-event distance (MED) for multiple samples with variable copy number input formats using the [medicc2](https://bitbucket.org/schwarzlab/medicc2/src/master/) algorithm.
+
+## Table of contents
+
+* [Pipeline setup](#pipeline-setup)
+  + [Step 1 Clone the repo](#step-1-clone-the-repo)
+  + [Step 2 Install conda](#step-2-install-conda)
+    - [For those with Conda already installed](#for-those-with-conda-already-installed)
+  + [Step 3 Installing additional dependencies](#step-3-installing-additional-dependencies)
+  + [Step 4 Preparing the input files](#step-4-preparing-the-input-files)
+    - [copy number data](#copy-number-data)
+    - [metadata](#metadata)
+  + [Step 5 Running medicc2-pipeline](#step-5-running-medicc2-pipeline)
 
 ## Pipeline setup
 
@@ -11,8 +29,8 @@
 [Clone](https://help.github.com/en/articles/cloning-a-repository) this repository to your local system.
 
 ```
-git clone https://github.com/Phil9S/swgs-absolutecn.git
-cd swgs-absolutecn/
+git clone https://github.com/Phil9S/medicc2-pipeline.git
+cd medicc2-pipeline/
 ```
 
 ### Step 2 Install conda
@@ -33,7 +51,7 @@ See installing [conda](https://conda.io/projects/conda/en/latest/user-guide/inst
 
 For systems where conda is already available the following requirements need to be met:
 - conda must be available on the PATH
-- conda version `4.8.3' or greater
+- conda version `4.8.2' or greater
 - the location of the installation folder is required
 
 Check the installed version of conda using the following:
@@ -52,7 +70,6 @@ whereis conda | sed 's%condabin/conda%%'
 From within the repository directory, run the install_env.sh script to generate a conda environment and install custom packages:
 ```
 ./install_env.sh $HOME/miniconda/
-
 ```
 
 If you used a previously installed conda build please use the conda or miniconda installation directory when running this section instead of '$HOME/miniconda/' to correctly initialise the conda environment.
@@ -63,9 +80,24 @@ conda activate medicc2
 
 ### Step 4 Preparing the input files
 
-#### Copy number data
+#### copy number data
 
-The `medicc2-pipeline` accepts three input formats in order to perform multi-sample/multi-patient medicc2 analysis. These input types are `segment tables`, `QDNAseq` data objects with class `QDNAseqCopyNumbers`, or an existing folder of medicc2-suitable input files. As medicc2 requires both a single file per patient and for each sample to contain a consistent number of segments, pre-processing is applied input types which do not conform to these requirements (`segment tables` and `QDNAseq`).
+The `medicc2-pipeline` accepts three input formats in order to perform multi-sample/multi-patient medicc2 analysis. These input types are segment tables, [QDNAseq](https://bioconductor.org/packages/release/bioc/html/QDNAseq.html) data objects with class `QDNAseqCopyNumbers`, or an existing folder of suitable input files required by `medicc2`. As `medicc2` requires both a single file per patient and for each sample to contain a consistent number of segments, pre-processing is applied input types which do not conform to these requirements (segment tables and QDNAseq).
+
+##### segment table
+
+|chrom|start|end |cn_a|cn_b|SAMPLE_ID|
+|-----|-----|----|----|----|---------|
+|chr1 |1    |1000|1   |3   |SAM1     |
+|chr1 |1    |2000|2   |2   |SAM2     |
+
+##### QDNAseqCopyNumbers
+
+An Rda file containing a [QDNAseq](https://bioconductor.org/packages/release/bioc/html/QDNAseq.html) object of class `QDNAseqCopyNumber`. This should have been saved using the R function `saveRDS`.
+
+##### Medicc2
+
+A folder containing a list of files (one per patient) containing the required medicc2 format.
 
 #### metadata
 
@@ -78,6 +110,4 @@ A metadata tab-seperated file is required to correctly split samples into patien
 
 An example meta.tsv is included in this repository.
 
-### Step 5 Running medicc2-pipeline
-
-
+### Step 5 Running medicc2 pipeline
