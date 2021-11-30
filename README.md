@@ -111,3 +111,23 @@ A metadata tab-seperated file is required to correctly split samples into patien
 An example meta.tsv is included in this repository.
 
 ### Step 5 Running medicc2 pipeline
+
+The medicc2 pipeline can be run on the command line using the following;
+```
+./run_medicc2.sh -h
+```
+Which will list the options and help information. In the most basic implementation the `run_medicc2.sh` script requires 3 or 4 arguments to run.
+##### medicc
+```
+./run_medicc2.sh -t medicc -i input_data/ -o home/medicc2_results/
+```
+
+##### qdnaseq
+```
+./run_medicc2.sh -t qdnaseq -i qdnaseqdata.Rds -o home/medicc2_results/ -m metadata.tsv
+```
+
+##### segment table
+```
+./run_medicc2.sh -t segment -i segment_table.tsv -o home/medicc2_results/ -m metadata.tsv
+```
