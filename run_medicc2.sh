@@ -156,10 +156,10 @@ elif [ "$TYPE" == "segment" ]; then
     fi
     echo -e "${ECHO}[`date "+%H:%M:%S"`][MAIN] Extracting medicc2 input format"
     ## Build output directory structure
-    #Rscript scripts/segment_to_medicc_format_script.R ${INPUT} ${OUTPUT}input_files/ ${META}
+    Rscript scripts/segtable_to_medicc_format_script.R ${INPUT} ${OUTPUT}input_files/ ${META}
 elif [ "$TYPE" == "medicc" ]; then
     echo -e "${ECHO}[`date "+%H:%M:%S"`][INIT] Input type set to medicc"
-    #cp ${INPUT} ${OUTPUT}input_files/
+    cp ${INPUT} ${OUTPUT}input_files/
 fi
 
 echo -e "${ECHO}[`date "+%H:%M:%S"`][MAIN] Running medicc2"

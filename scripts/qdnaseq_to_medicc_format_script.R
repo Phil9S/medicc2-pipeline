@@ -42,7 +42,7 @@ getMediccTable <- function(object, value="copynumber"){
 }
 
 # Load sample CN
-print(args)
+#print(args)
 abs_data <- readRDS(args[1])
 
 # Set output folder
