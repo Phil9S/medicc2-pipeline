@@ -86,10 +86,22 @@ The `medicc2-pipeline` accepts three input formats in order to perform multi-sam
 
 ##### segment table
 
-|chrom|start|end |cn_a|cn_b|SAMPLE_ID|
-|-----|-----|----|----|----|---------|
-|chr1 |1    |1000|1   |3   |SAM1     |
-|chr1 |1    |2000|2   |2   |SAM2     |
+Segment tables should be either total or allelic-specific inputs as described below:
+segcols <- c("chromosome","start","end","segVal","sample")
+segcolsAS <- c("chromosome","start","end","segValA","segValB","sample")
+##### Total
+
+|chromosome|start|end |segVal |sample|
+|----------|-----|----|-------|------|
+|chr1 |1   |1000 |1   |3      |SAM1  |
+|chr1 |1   |2000 |2   |2      |SAM2  |
+
+##### Allele-specific
+
+|chromosome|start|end |segValA|segValB|sample|
+|----------|-----|----|-------|-------|------|
+|chr1 |1   |1000 |1   |3      |1      |SAM1  |
+|chr1 |1   |2000 |2   |2      |0      |SAM2  |
 
 ##### QDNAseqCopyNumbers
 
