@@ -87,8 +87,7 @@ The `medicc2-pipeline` accepts three input formats in order to perform multi-sam
 ##### segment table
 
 Segment tables should be either total or allelic-specific inputs as described below:
-segcols <- c("chromosome","start","end","segVal","sample")
-segcolsAS <- c("chromosome","start","end","segValA","segValB","sample")
+
 ##### Total
 
 |chromosome|start|end |segVal |sample|
