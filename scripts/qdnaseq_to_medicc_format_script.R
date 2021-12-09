@@ -66,10 +66,10 @@ medicc.table <- lapply(names(sample_by_pat_list),FUN = function(x){
     # if sample vector contains more than one sample then extract medicc
     # formatted table from QDNAseq object
     if(length(y) > 1){
-        object <- abs_data[,colnames(abs_data) %in% y]
-        table <- getMediccTable(object = object,value = "segmented")
-	      table$cn_a[table$cn_a < 0] <- 0
-        write.table(x = table,file = paste0(outfolder,patient_name),quote = F,sep = "\t",row.names = F,col.names = T)
+    	object <- abs_data[,colnames(abs_data) %in% y]
+    	table <- getMediccTable(object = object,value = "segmented")
+    	table$cn_a[table$cn_a < 0] <- 0
+    	write.table(x = table,file = paste0(outfolder,patient_name),quote = F,sep = "\t",row.names = F,col.names = T)
     }
     return(table)
 })

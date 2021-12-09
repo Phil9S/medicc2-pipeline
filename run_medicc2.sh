@@ -27,6 +27,7 @@ helpFunction(){
     echo -e "\t\t-i\tFull path to input file matching input type specified by -t"
     echo -e "\t\t-o\tFull path output directory for Medicc2 results"
     echo -e "\t\t-m\tFull path to meta file detailing patient-sample relationship, where -t is not medicc"
+    echo -e "\t\t-c\tNumber of threads (default: 8)"
     echo -e "\t\t-a\tAdditional arguments passed to medicc2 (must be quoted)"
     echo -e "\tFlags:"
     echo -e "\t\t-w\tSet medicc2 to not use whole genome duplication in tree calculations"
