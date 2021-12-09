@@ -12,13 +12,14 @@ options(scipen=999)
 # Required packages
 require(GenomicRanges, quietly = TRUE, warn.conflicts = FALSE)
 require(dplyr, quietly = TRUE, warn.conflicts = FALSE)
+require(tidyr, quietly = TRUE, warn.conflicts = FALSE)
 
 getMediccTableSeg <- function(object){
     valid = apply(object,MARGIN = 1,FUN = function(x) !any(is.na(x)))
-    CN = object[valid,]
+    CN = object[valid,-which(colnames(object) %in% c("chromosome","start","end"))]
     CN = round(CN)
     #valid = binsToUseInternal(object)
-    abs_valid <- abs_data[valid,]
+    abs_valid <- object[valid,]
     info = rownames(abs_valid)
     #seqName = unlist(lapply(strsplit(info, ":"),[,1]))
     seqName = unlist(lapply(strsplit(info, ":"),FUN = function(x) x[1]))
@@ -29,7 +30,7 @@ getMediccTableSeg <- function(object){
     rl = Rle(ids[valid])
     export_single_sample <- function(sample_index){
         cn = CN[,sample_index]
-        sample = colnames(object)[[sample_index]]
+        sample = colnames(CN)[[sample_index]]
         cn_values = cn[start(rl)]
         chromosomeValues = chromosome[start(rl)]
         gr = GenomicRanges::GRanges(seqnames = chromosomeValues, IRanges(start(rl),
@@ -38,7 +39,7 @@ getMediccTableSeg <- function(object){
             dplyr::relocate(sample_id, chrom, start, end, cn_a)
         return(df)
     }
-    dfs = dplyr::bind_rows(lapply(1:ncol(object), export_single_sample))
+    dfs = dplyr::bind_rows(lapply(1:ncol(CN), export_single_sample))
     # replace index with actual position
     dfs$start <- abs_valid$start[dfs$start]
     dfs$end <- abs_valid$end[dfs$end]
@@ -54,7 +55,7 @@ getCNbins<- function(posBins,data,samples){
     return(cn)
 }
 
-getBinsStartsEnds <- function(window=500000,chr,lengthChr){
+getBinsStartsEnds <- function(window,chr,lengthChr){
     divideChr <- seq(0, lengthChr, window)
     starts <- divideChr[-c(length(divideChr))] + 1
     ends <- divideChr[-c(1)]
@@ -92,6 +93,19 @@ segcolsAS <- c("chromosome","start","end","segValA","segValB","sample")
 
 # Load sample CN
 seg_data <- read.table(args[1],header = TRUE,sep = "\t")
+if(any(grepl(pattern = "chr*",seg_data$chromosome))){
+    seg_data$chromosome <- gsub(pattern = "chr",replacement = "",seg_data$chromosome)
+}
+if(any(grepl(pattern = "X",seg_data$chromosome))){
+    seg_data$chromosome[seg_data$chromosome == "X"] <- 23
+}
+
+if(is.character(seg_data$chromosome)){
+    chrs <- as.character(seq.int(1,23,1))
+    seg_data <- seg_data[seg_data$chromosome %in% chrs,]
+    seg_data$chromosome <- as.numeric(seg_data$chromosome)
+}
+
 
 # Set output folder
 outfolder <- args[2]
@@ -117,24 +131,24 @@ if(ncol(seg_data) == 5){
     stop("Incorrect number of columns in segment table")
 }
 
-allchr=c(1:22) #Add 23 if want to include chrX
-lengthChr <- c("1"="249250621","2"="243199373","3"="198022430",
-               "4"="191154276","5"="180915260","6"="171115067",
-               "7"="159138663","8"="146364022","9"="141213431",
-               "10"="135534747","11"="135006516","12"="133851895",
-               "13"="115169878","14"="107349540","15"="102531392",
-               "16"="90354753","17"="81195210","18"="78077248",
-               "19"="59128983","20"="63025520","21"="48129895",
-               "22"="51304566")
+## set bin size
+bin <- 300000
 
+## Get chromosome lengths and names
+lengthChr <- unlist(lapply(split(seg_data,f = seg_data$chromosome),FUN = function(x) max(x$end)))
+lengthChr <- lengthChr[which(names(lengthChr) %in% unique(seg_data$chromosome))]
+allchr <- names(lengthChr)
+
+## Generate bin positions from chromsome lengths and bin size
 posBins <- lapply(allchr,function(chr) 
-    getBinsStartsEnds(window=3000000, chr, lengthChr[chr]))
+    getBinsStartsEnds(window=bin, chr, lengthChr[chr]))
 
 if(type == "tot"){
-    seg_data <- seg_data %>%
+    seg_dataTOT <- seg_data %>%
                     mutate(segVal = replace(segVal, segVal < 0, 0)) %>%
-                    select(segcols)
-    bins <- as.data.frame(getCNbins(posBins = posBins,data = seg_data,samples = unique(seg_data$sample)))
+                    select(all_of(segcols))
+    
+    bins <- as.data.frame(getCNbins(posBins = posBins,data = seg_dataTOT,samples = unique(seg_dataTOT$sample)))
     bins <- data.frame((lapply(bins,FUN = function(x) as.numeric(x))),check.names = FALSE)
     
     processedbins <- do.call(rbind,lapply(posBins,FUN = function(x){
@@ -146,21 +160,17 @@ if(type == "tot"){
     
     abs_data <- as.data.frame(cbind(processedbins,bins))
 } else if(type == "as"){
-    seg_dataA <- seg_dataAS %>%
-                    select(all_of(segcolsAS)) %>%
-                    select(-segValB) %>%
-                    rename("segVal"="segValA")
-    
-    seg_dataB <- seg_dataAS %>%
-                    select(all_of(segcolsAS)) %>%
-                    select(-segValA) %>%
-                    rename("segVal"="segValB")
+    # Generate new sample by allele table
+    seg_dataA <- seg_data %>%
+                    pivot_longer(cols = c(segValA,segValB)) %>%
+                    mutate(sample = paste0(sample,"_",name)) %>%
+                    arrange(sample,chromosome,start) %>%
+                    select(-name) %>%
+                    rename(segVal = "value") %>%
+                    relocate(sample, .after = last_col())
     
     binsA <- as.data.frame(getCNbins(posBins = posBins,data = seg_dataA,samples = unique(seg_dataA$sample)))
-    binsA <- data.frame((lapply(bins,FUN = function(x) as.numeric(x))),check.names = FALSE)
-    
-    binsB <- as.data.frame(getCNbins(posBins = posBins,data = seg_dataB,samples = unique(seg_dataB$sample)))
-    binsB <- data.frame((lapply(bins,FUN = function(x) as.numeric(x))),check.names = FALSE)
+    binsA <- data.frame((lapply(binsA,FUN = function(x) as.numeric(x))),check.names = FALSE)
     
     processedbins <- do.call(rbind,lapply(posBins,FUN = function(x){
         chr <- x$chromosome
@@ -170,9 +180,9 @@ if(type == "tot"){
     }))
     
     abs_dataA <- as.data.frame(cbind(processedbins,binsA))
-    abs_dataB <- as.data.frame(cbind(processedbins,binsB))
-    
 }
+
+
 # Split sample lists by patient
 sample_by_pat_list <- split(meta.data$SAMPLE_ID,f=as.factor(meta.data$PATIENT_ID))
 
@@ -186,16 +196,23 @@ lapply(names(sample_by_pat_list),FUN = function(x){
     # formatted table from segtable
     if(length(y) > 1){
         if(type == "tot"){
-            object <- as.data.frame(abs_data[,colnames(abs_data) %in% y])
+            object <- as.data.frame(abs_data[,colnames(abs_data) %in% c("chromosome","start","end",y)])
             table <- getMediccTableSeg(object = object)
             write.table(x = table,file = paste0(outfolder,patient_name),quote = F,sep = "\t",row.names = F,col.names = T)
         } else if(type == "as"){
-            objectA <- as.data.frame(abs_dataA[,colnames(abs_dataA) %in% y])
+            y2 <- paste0(y,"_",rep(c("segValA","segValB"),times=length(y)))
+            objectA <- as.data.frame(abs_dataA[,colnames(abs_dataA) %in% c("chromosome","start","end",y2)])
+            
             tableA <- getMediccTableSeg(object = objectA)
-            objectB <- as.data.frame(abs_dataB[,colnames(abs_dataB) %in% y])
-            tableB <- getMediccTableSeg(object = objectB)
-            tableA$cn_b <- tableB$cn_a
-            write.table(x = tableA,file = paste0(outfolder,patient_name),quote = F,sep = "\t",row.names = F,col.names = T)
+            
+            tableAf <- tableA %>%
+                        mutate(group = ifelse(grepl(sample_id,pattern = "_segValA"),"segValA","segValB")) %>%
+                        mutate(sample_id = gsub(sample_id,pattern = "_segValA|_segValB",replacement = "")) %>%
+                        group_by(sample_id) %>%
+                        pivot_wider(names_from = group,values_from = cn_a) %>%
+                        rename(cn_a = "segValA",cn_b = "segValB")
+
+            write.table(x = tableAf,file = paste0(outfolder,patient_name),quote = F,sep = "\t",row.names = F,col.names = T)
         }
     }
 })
