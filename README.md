@@ -97,10 +97,10 @@ Segment tables should be either total or allelic-specific inputs as described be
 
 ##### Allele-specific
 
-|chromosome|start|end |segValA|segValB|sample|
-|----------|-----|----|-------|-------|------|
-|chr1 |1   |1000 |1   |3      |1      |SAM1  |
-|chr1 |1   |2000 |2   |2      |0      |SAM2  |
+|chromosome|start|end  |segValA|segValB|sample|
+|----------|-----|-----|-------|-------|------|
+|chr1      |1    |1000 |1      |3      |SAM1  |
+|chr1      |1    |2000 |2      |2      |SAM2  |
 
 ##### QDNAseqCopyNumbers
 
