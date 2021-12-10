@@ -5,7 +5,6 @@
 # Modified by Philip Smith
 
 args = commandArgs(trailingOnly=TRUE)
-
 # Disable sci notation
 options(scipen=999)
 
@@ -92,10 +91,12 @@ segcols <- c("chromosome","start","end","segVal","sample")
 segcolsAS <- c("chromosome","start","end","segValA","segValB","sample")
 
 # Load sample CN
-seg_data <- read.table(args[1],header = TRUE,sep = "\t")
+seg_data <- read.table(args[1],header = TRUE,sep = "\t",stringsAsFactors = F)
+
 if(any(grepl(pattern = "chr*",seg_data$chromosome))){
     seg_data$chromosome <- gsub(pattern = "chr",replacement = "",seg_data$chromosome)
 }
+
 if(any(grepl(pattern = "X",seg_data$chromosome))){
     seg_data$chromosome[seg_data$chromosome == "X"] <- 23
 }
@@ -132,7 +133,7 @@ if(ncol(seg_data) == 5){
 }
 
 ## set bin size
-bin <- 300000
+bin <- 30000
 
 ## Get chromosome lengths and names
 lengthChr <- unlist(lapply(split(seg_data,f = seg_data$chromosome),FUN = function(x) max(x$end)))

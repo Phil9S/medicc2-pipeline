@@ -26,4 +26,4 @@
 #SBATCH -p general
 
 ##CODE GOES BELOW HERE - SCRIPTS/BASH/ETC
-./run_medicc2.sh -n -i ~/scratcha/smith10/medicc2/britroc_30kb_ds_absCopyNumber.rds -o ~/scratcha/smith10/medicc2/results/ -m ~/scratcha/smith10/medicc2/meta.tsv -t qdnaseq
+./run_medicc2.sh -i ~/segment.test.txt -o ~/scratcha/smith10/medicc2/segment_test/ -m ~/test.segment.meta.tsv -t segment
