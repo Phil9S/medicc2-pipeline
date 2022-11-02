@@ -43,9 +43,9 @@ else
 fi
 echo -e "[${script}] Activating conda env"
 conda activate medicc2
-echo -e "[${script}] Adding modified QDNAseq package"
+echo -e "[${script}] Installing modified QDNAseq package"
 R_LIB_PATH=$(Rscript resources/libpath.R)
-cp -r resources/packages/QDNAseqmod/ ${R_LIB_PATH} 
+Rscript -e 'devtools::install_github(repo = "markowetzlab/QDNAseqmod")'
 echo -e "[${script}] Testing package installation"
 Rscript resources/package_load.R
 echo -e "[${script}] conda env ready and all packages installed!"
