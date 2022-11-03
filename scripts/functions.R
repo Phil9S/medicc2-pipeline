@@ -1,7 +1,7 @@
 library(GenomicRanges)
 library(dplyr)
 library(tidyr)
-library(data.table)
+#library(data.table)
 library(stringr)
 
 ## Segment to bin format
@@ -162,33 +162,33 @@ get_normalised_segments <- function(data=NULL,mapping=NULL,type="segment",value=
     return(normalised_segments)
 }
 
-get_mediccc_tables <- function(norm_segs=NULL,write=TRUE){
+get_medicc_tables <- function(norm_segs=NULL,write=TRUE,outputdir=NULL){
     if(is.null(norm_segs)){
         stop("no segs provided")
     }
-    withdiploid <- lapply(norm_segs,FUN = function(x) add_diploid(x))
+    if(is.null(outputdir)){
+        stop("no output dir")
+    }
+    withdiploid <- lapply(norm_segs,FUN = function(x) medicc_format(x))
     if(write){
         lapply(names(withdiploid),FUN = function(x){
             file_name <- x
             filesave <- as.data.frame(withdiploid[[x]])
             #cat(paste0("write file ",file_name),"\n")
-            #write.table(filesave,paste0(OUTPUTDIR,file_name),append = F,quote = F,sep = "\t",row.names = F,col.names = T)
+            write.table(filesave,paste0(outputdir,file_name),append = F,quote = F,sep = "\t",row.names = F,col.names = T)
         })
     }
     return(withdiploid)
 }
 
-add_diploid <- function(x){
-    y <- x[x$sample == x$sample[1],]
-    y$sample <- rep("diploid",nrow(y))
-    y$segVal <- as.numeric(rep(2,nrow(y)))
-    a <- rbind(x,y)
+medicc_format <- function(x){
+    #y <- x[x$sample == x$sample[1],]
+    #y$sample <- rep("diploid",nrow(y))
+    #y$segVal <- as.numeric(rep(2,nrow(y)))
+    #a <- rbind(x,y)
+    a <- x 
+    colnames(a) <- c("chrom","start","end","cn_a","sample_id")
+    #a$chrom <- paste0("chr",a$chrom)
+    a <- a[,c("sample_id","chrom","start","end","cn_a")]
     return(as.data.frame(a))
 }
-
-mapping <- read.table("resources/mapping_file_example.tsv",header = T,sep = "\t")
-segment_table <- read.table("resources/segment_table_example.tsv",sep="\t",header = T)
-qdnaseq <- readRDS("resources/qdnaseqmod_example_file.rds")
-
-norm_segs <- get_normalised_segments(data = segment_table,mapping = mapping,type = "segment")
-get_mediccc_tables(norm_segs = norm_segs)
