@@ -1,0 +1,2 @@
+path <- .libPaths()
+cat(path)

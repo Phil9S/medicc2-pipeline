@@ -1,0 +1,17 @@
+name: medicc2
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - bioconductor-qdnaseq
+  - r-devtools
+  - medicc2
+  - bioconductor-biobase
+  - r-stringr
+  - r-tidyr
+  - r-base
+  - r-dplyr
+  - bioconductor-genomicranges
+prefix: /Users/smith10/resources/miniconda3/envs/medicc2
+
