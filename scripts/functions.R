@@ -22,11 +22,22 @@ get_binned_segment_table <- function(segtable = NULL,binsize = 30000,qdnaseq.for
   tiles <- unlist(tileGenome(seqlengths = seqlengths,tilewidth = binsize))
   
   # Merge bins and segment tables to form annotated bins
-  binned <- as.data.frame(mergeByOverlaps(tiles,table_gr))
+  #binned <- as.data.frame(mergeByOverlaps(tiles,table_gr))
+  
+  binned <- mergeByOverlaps(tiles,table_gr)
+  binned <- data.frame(binned$tiles,binned$table_gr,binned$segVal,binned$sample)
+  
+  # binned_mat <- as.data.frame(binned %>%
+  #                               select(-c(contains("table_gr"),"tiles.strand","tiles.width")) %>%
+  #                               pivot_wider(values_from = "segVal",names_from = "sample",) %>%
+  #                               dplyr::rename(c("chromosome"="tiles.seqnames","start"="tiles.start","end"="tiles.end")))
+  
   binned_mat <- as.data.frame(binned %>%
-                                select(-c(contains("table_gr"),"tiles.strand","tiles.width")) %>%
-                                pivot_wider(values_from = "segVal",names_from = "sample",) %>%
-                                dplyr::rename(c("chromosome"="tiles.seqnames","start"="tiles.start","end"="tiles.end")))
+                                  select(-c(contains(".1"),"strand","width","binned.segVal","binned.sample")) %>%
+                                  distinct() %>%
+                                  pivot_wider(values_from = "segVal",names_from = "sample",values_fn = median) %>%
+                                  dplyr::rename(c("chromosome"="seqnames","start"="start","end"="end")))
+  
   rowN <- paste0(binned_mat[,1],":",binned_mat[,2],"-",binned_mat[,3])
   binned_mat <- binned_mat[,-c(1:3)]
   binned_mat <- apply(binned_mat,MARGIN = 2,FUN = function(x) as.numeric(x))
@@ -103,14 +114,13 @@ subset_binned <- function(binned,x){
 collapse_bins <- function(binned_sub,samples=samples){
     
     binned_sub_collapse <- as.data.frame(binned_sub) %>%
-        group_by(chromosome,const) %>%
+        group_by(chromosome) %>%
         mutate(change = const != lag(const)) %>%
         mutate(change = ifelse(is.na(change),TRUE,change)) %>%
         ungroup() %>%
         mutate(segs = cumsum(change)) %>%
-        group_by(segs) %>%
+        group_by(chromosome,segs) %>%
         summarise(
-            across(chromosome,unique),
             across(start,min),
             across(end,max),
             across(const,unique)) %>%
@@ -121,7 +131,8 @@ collapse_bins <- function(binned_sub,samples=samples){
         pivot_longer(cols = 4:ncol(.),names_to = "sample",values_to = "segVal") %>%
         arrange(sample) %>%
         dplyr::relocate(chromosome,start,end,segVal,sample) %>%
-        mutate(segVal = as.numeric(segVal))
+        mutate(segVal = as.numeric(segVal)) %>%
+        distinct()
     
     # binned_sub_collapse <- as.data.table(binned_sub)[,as.data.table(reduce(IRanges(start, end))),
     #                                                  by = .(chromosome,const)] %>%
@@ -157,7 +168,7 @@ get_normalised_segments <- function(data=NULL,mapping=NULL,type="segment",value=
     snp={
         stop("do nothing")
     })
-    normalised_segs_tibble <- normalised_segments(binned_mat,mapping = mapping)
+    normalised_segs_tibble <- normalised_segments(binned = binned_mat,mapping = mapping)
     normalised_segments <- as.list(normalised_segs_tibble)
     return(normalised_segments)
 }
@@ -192,3 +203,10 @@ medicc_format <- function(x){
     a <- a[,c("sample_id","chrom","start","end","cn_a")]
     return(as.data.frame(a))
 }
+
+# segs <- read.table("resources/segment_table_example.tsv",header = T,sep = "\t")
+# meta <- read.table("resources/mapping_file_example.tsv",header = T,sep = "\t")
+# 
+# test <- get_normalised_segments(data = segs,mapping = meta,type = "segment")
+# df <- test[[2]]
+## END
