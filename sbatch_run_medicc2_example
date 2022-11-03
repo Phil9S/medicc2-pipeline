@@ -8,7 +8,7 @@
 #!#############################################################
 
 #! Give your job a name
-#SBATCH -J medicc2-pipeline 
+#SBATCH -J medicc2-pipeline-example
 #! How many cores per task?
 #SBATCH --cpus-per-task=8
 #! How much memory do you need?
@@ -26,4 +26,8 @@
 #SBATCH -p general
 
 ##CODE GOES BELOW HERE - SCRIPTS/BASH/ETC
-./run_medicc2.sh -i ~/segment.test.txt -o ~/scratcha/smith10/medicc2/segment_test/ -m ~/test.segment.meta.tsv -t segment
+./run_medicc2.sh -t segment \
+	-i resources/segment_table_example.tsv \
+	-o resources/example_run/ \
+	-m resources/mapping_file_example.tsv \
+	-wn
