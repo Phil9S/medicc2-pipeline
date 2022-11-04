@@ -1,5 +1,5 @@
 # Check if packages are installed
-listOfAllPackages = c("Biobase","dplyr","QDNAseq","QDNAseqmod","GenomicRanges")
+listOfAllPackages = c("Biobase","dplyr","QDNAseq","QDNAseqmod","GenomicRanges","tidyr","stringr")
 
 for(thisPackage in listOfAllPackages) {
   

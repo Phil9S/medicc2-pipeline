@@ -30,7 +30,7 @@ fi
 CONDA_DIR=$1
 
 echo -e "[${script}] Creating conda env"
-conda env create -f config/conda_env.yml
+conda env create -q -f config/conda_env.yml
 DIR=${CONDA_DIR}etc/profile.d/conda.sh
 if [ -f "${DIR}" ]; then
 	echo -e "[${script}] Initialising conda env"
@@ -45,7 +45,7 @@ echo -e "[${script}] Activating conda env"
 conda activate medicc2
 echo -e "[${script}] Installing modified QDNAseq package"
 R_LIB_PATH=$(Rscript resources/libpath.R)
-Rscript -e 'devtools::install_github(repo = "markowetzlab/QDNAseqmod")'
+Rscript -e 'devtools::install_github(repo = "markowetzlab/QDNAseqmod",quiet=TRUE)'
 echo -e "[${script}] Testing package installation"
 Rscript config/package_load.R
 echo -e "[${script}] conda env ready and all packages installed!"
