@@ -86,7 +86,7 @@ The `medicc2-pipeline` accepts three input formats in order to perform multi-sam
 
 ##### segment table
 
-Segment tables should be either total or allelic-specific inputs as described below:
+Segment tables should be either total ~~or allelic-specific inputs~~ as described below:
 
 ##### Total
 
@@ -95,16 +95,20 @@ Segment tables should be either total or allelic-specific inputs as described be
 |chr1      |1    |1000|1     |SAM1  |
 |chr1      |1    |2000|2     |SAM2  |
 
-##### Allele-specific
+##### Allele-specific [NOT AVAILABLE]
 
 |chromosome|start|end  |segValA|segValB|sample|
 |----------|-----|-----|-------|-------|------|
 |chr1      |1    |1000 |1      |3      |SAM1  |
 |chr1      |1    |2000 |2      |2      |SAM2  |
 
+An example total copy number file `resources/segment_table_example.tsv` is provided in this repository.
+
 ##### QDNAseqCopyNumbers
 
 An Rda file containing a [QDNAseq](https://bioconductor.org/packages/release/bioc/html/QDNAseq.html) object of class `QDNAseqCopyNumber`. This should have been saved using the R function `saveRDS`.
+
+An example QDNAseq file `resources/qdnaseqmod_example_file.rds` is provided in this repository.
 
 ##### Medicc2
 
@@ -119,7 +123,7 @@ A metadata tab-seperated file is required to correctly split samples into patien
 |PAT1      |SAM1     |
 |PAT1      |SAM2     |
 
-An example meta.tsv is included in this repository.
+An example file `resources/mapping_file_example.tsv` is included in this repository.
 
 ### Step 5 Running medicc2 pipeline
 
@@ -141,4 +145,19 @@ Which will list the options and help information. In the most basic implementati
 ##### segment table
 ```
 ./run_medicc2.sh -t segment -i segment_table.tsv -o home/medicc2_results/ -m metadata.tsv
+```
+#### Example run
+
+```
+./run_medicc2.sh -t segment \
+        -i resources/segment_table_example.tsv \
+        -o resources/example_run/ \
+        -m resources/mapping_file_example.tsv \
+        -wn
+```
+
+or using SLURM job control system
+
+```
+sbatch sbatch_run_medicc2_example
 ```
