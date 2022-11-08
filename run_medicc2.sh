@@ -148,7 +148,7 @@ if [ "$TYPE" == "qdnaseq" ]; then
     fi
     echo -e "${ECHO}[`date "+%H:%M:%S"`][MAIN] Extracting medicc2 input format"
     ## Build output directory structure
-    #Rscript scripts/qdnaseq_to_medicc_format.R ${INPUT} ${OUTPUT}input_files/ ${META}
+    Rscript scripts/qdnaseq_to_medicc_format.R ${INPUT} ${OUTPUT}input_files/ ${META}
 elif [ "$TYPE" == "segment" ]; then
     echo -e "${ECHO}[`date "+%H:%M:%S"`][INIT] Input type set to segment table"
     if ! [ -x "$(command -v Rscript)" ]; then
@@ -157,7 +157,7 @@ elif [ "$TYPE" == "segment" ]; then
     fi
     echo -e "${ECHO}[`date "+%H:%M:%S"`][MAIN] Extracting medicc2 input format"
     ## Build output directory structure
-    #Rscript scripts/segment_table_to_medicc_format.R ${INPUT} ${OUTPUT}input_files/ ${META}
+    Rscript scripts/segment_table_to_medicc_format.R ${INPUT} ${OUTPUT}input_files/ ${META}
 elif [ "$TYPE" == "medicc" ]; then
     echo -e "${ECHO}[`date "+%H:%M:%S"`][INIT] Input type set to medicc"
     cp ${INPUT} ${OUTPUT}input_files/
