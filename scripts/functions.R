@@ -201,6 +201,7 @@ medicc_format <- function(x){
     colnames(a) <- c("chrom","start","end","cn_a","sample_id")
     #a$chrom <- paste0("chr",a$chrom)
     a <- a[,c("sample_id","chrom","start","end","cn_a")]
+    a$cn_a[a$cn_a < 0] <- 0
     return(as.data.frame(a))
 }
 

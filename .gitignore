@@ -43,3 +43,9 @@ slurm-*
 
 # LFS temp files
 .nfs*
+
+# example outputs
+resources/example_run/input_files/*
+resources/example_run/medicc2_output/*
+resources/example_run/medicc_out.rds
+resources/example_run/norm_segs.rds
