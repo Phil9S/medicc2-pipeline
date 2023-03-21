@@ -1,40 +1,18 @@
 # medicc2-pipeline
 
-### Authors
-
-* Philip Smith (@phil9s)
-
 ## Description
 
 *Summary*
 
 Reconstruct phylogenetic trees based on minimum-event distance (MED) for multiple samples with variable copy number input formats using the [medicc2](https://bitbucket.org/schwarzlab/medicc2/src/master/) algorithm.
 
-## Table of contents
-
-* [Pipeline setup](#pipeline-setup)
-  + [Step 1 Clone the repo](#step-1-clone-the-repo)
-  + [Step 2 Install conda](#step-2-install-conda)
-    - [For those with Conda already installed](#for-those-with-conda-already-installed)
-  + [Step 3 Installing additional dependencies](#step-3-installing-additional-dependencies)
-  + [Step 4 Preparing the input files](#step-4-preparing-the-input-files)
-    - [copy number data](#copy-number-data)
-    - [metadata](#metadata)
-  + [Step 5 Running medicc2-pipeline](#step-5-running-medicc2-pipeline)
-
 ## Pipeline setup
-
-### Step 1 Clone the repo
-
-[Clone](https://help.github.com/en/articles/cloning-a-repository) this repository to your local system.
-
+### Clone the repo
 ```
 git clone https://github.com/Phil9S/medicc2-pipeline.git
 cd medicc2-pipeline/
 ```
-
-### Step 2 Install conda
-
+### Install conda
 Run the following to install conda whilst following the on-screen instructions.
 - When asked to run `conda init` and initialise conda please respond with 'yes'
 
@@ -65,7 +43,7 @@ Find your installation directory using the following:
 whereis conda | sed 's%condabin/conda%%'
 ```
 
-### Step 3 Installing additional dependencies
+### Installing additional dependencies
 
 From within the repository directory, run the install_env.sh script to generate a conda environment and install custom packages:
 ```
@@ -78,7 +56,8 @@ If you used a previously installed conda build please use the conda or miniconda
 conda activate medicc2
 ```
 
-### Step 4 Preparing the input files
+## Running pre-processing & medicc2
+### Preparing the input files
 
 #### copy number data
 
@@ -95,7 +74,7 @@ Segment tables should be either total ~~or allelic-specific inputs~~ as describe
 |chr1      |1    |1000|1     |SAM1  |
 |chr1      |1    |2000|2     |SAM2  |
 
-##### Allele-specific [NOT AVAILABLE]
+##### Allele-specific
 
 |chromosome|start|end  |segValA|segValB|sample|
 |----------|-----|-----|-------|-------|------|
@@ -125,33 +104,37 @@ A metadata tab-seperated file is required to correctly split samples into patien
 
 An example file `resources/mapping_file_example.tsv` is included in this repository.
 
-### Step 5 Running medicc2 pipeline
+### Running medicc2 pipeline
 
 The medicc2 pipeline can be run on the command line using the following;
 ```
 ./run_medicc2.sh -h
 ```
-Which will list the options and help information. In the most basic implementation the `run_medicc2.sh` script requires 3 or 4 arguments to run.
+Which will list the options and help information.
 
-#### Example runs
+### Example runs
 
-##### segment table (allele-specific)
+#### segment table (allele-specific)
 ```
 ./run_medicc2.sh -t segment -i resources/segment_table_allele_specfic_example.tsv -o resources/example_run/ -m resources/mapping_file_example.tsv
 ```
-##### segment table (total)
+#### segment table (total)
 ```
 ./run_medicc2.sh -t segment -i resources/segment_table_example.tsv -o resources/example_run/ -m resources/mapping_file_example.tsv -wn
 ```
-##### qdnaseq
+#### qdnaseq
 ```
 ./run_medicc2.sh -t qdnaseq -i qdnaseqdata.Rds -o home/medicc2_results/ -m metadata.tsv
 ```
-##### medicc (allele-specific)
+#### medicc (allele-specific)
 ```
 ./run_medicc2.sh -t medicc -i resources/medicc_input_as/ -o resources/example_run/
 ```
-##### medicc (total)
+#### medicc (total)
 ```
 ./run_medicc2.sh -t medicc -i resources/medicc_input_total/ -o resources/example_run/ -wn
 ```
+
+### Authors
+
+* Philip Smith (@phil9s)
