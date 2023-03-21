@@ -101,74 +101,87 @@ if [ "$DEBUG" == TRUE ]; then
     exit 0
 fi
 
+## start script
+echo -e "${ECHO}[`date "+%H:%M:%S"`][INIT] Starting pipeline" | tee ${OUTPUT}$0_log.txt
 ## Check input file
-if ! [ -f "${INPUT}" ]; then
-    echo -e "${ECHO}[`date "+%H:%M:%S"`][ERROR] Input file does not exist"
-    stopFunction
-elif ! [ -r "${INPUT}" ]; then
-    echo -e "${ECHO}[`date "+%H:%M:%S"`][ERROR] Input file not readable"
-    stopFunction
+
+if [ "$TYPE" != "medicc" ]; then
+    if ! [ -f "${INPUT}" ]; then
+        echo -e "${ECHO}[`date "+%H:%M:%S"`][ERROR] Input file does not exist" | tee -a ${OUTPUT}$0_log.txt
+        stopFunction
+    elif ! [ -r "${INPUT}" ]; then
+        echo -e "${ECHO}[`date "+%H:%M:%S"`][ERROR] Input file not readable" | tee -a ${OUTPUT}$0_log.txt
+        stopFunction
+    fi
+else
+    if ! [ -d "${INPUT}" ]; then
+        echo -e "${ECHO}[`date "+%H:%M:%S"`][ERROR] Input directory does not exist" | tee -a ${OUTPUT}$0_log.txt
+        stopFunction
+    elif ! [ -r "${INPUT}" ]; then
+        echo -e "${ECHO}[`date "+%H:%M:%S"`][ERROR] Input directory not readable" | tee -a ${OUTPUT}$0_log.txt
+        stopFunction
+    fi
 fi
 
 ## Check META file
 if [ "$TYPE" != "medicc" ]; then
     if ! [ -f "${META}" ]; then
-        echo -e "${ECHO}[`date "+%H:%M:%S"`][ERROR] Metadata file does not exist"
+        echo -e "${ECHO}[`date "+%H:%M:%S"`][ERROR] Metadata file does not exist" | tee -a ${OUTPUT}$0_log.txt
         stopFunction
     elif ! [ -r "${META}" ]; then
-        echo -e "${ECHO}[`date "+%H:%M:%S"`][ERROR] Metadata file not readable"
+        echo -e "${ECHO}[`date "+%H:%M:%S"`][ERROR] Metadata file not readable" | tee -a ${OUTPUT}$0_log.txt
         stopFunction
     fi
 fi
 
 ## Check output directory exists and writable 
 if ! [ -d "${OUTPUT}" ]; then
-    echo -e "${ECHO}[`date "+%H:%M:%S"`][ERROR] Output directory does not exist"
+    echo -e "${ECHO}[`date "+%H:%M:%S"`][ERROR] Output directory does not exist" | tee -a ${OUTPUT}$0_log.txt
     stopFunction
 elif ! [ -w "${OUTPUT}" ]; then
-    echo -e "${ECHO}[`date "+%H:%M:%S"`][ERROR] Output directory not writable"
+    echo -e "${ECHO}[`date "+%H:%M:%S"`][ERROR] Output directory not writable" | tee -a ${OUTPUT}$0_log.txt
     stopFunction
 fi
 
 ## Check medicc2 is available
 if ! [ -x "$(command -v medicc2)" ]; then
-    echo -e "${ECHO}[`date "+%H:%M:%S"`][ERROR] Medicc2 unavailable - check conda environment"
+    echo -e "${ECHO}[`date "+%H:%M:%S"`][ERROR] Medicc2 unavailable - check conda environment" | tee -a ${OUTPUT}$0_log.txt
     stopFunction
 fi
 
-echo -e "${ECHO}[`date "+%H:%M:%S"`][INIT] Making working directories"
+echo -e "${ECHO}[`date "+%H:%M:%S"`][INIT] Making working directories" | tee -a ${OUTPUT}$0_log.txt
 makeDirs
 
 if [ "$TYPE" == "qdnaseq" ]; then
     ## Check programmes available
-    echo -e "${ECHO}[`date "+%H:%M:%S"`][INIT] Input type set to QDNASEQ object"
+    echo -e "${ECHO}[`date "+%H:%M:%S"`][INIT] Input type set to QDNASEQ object" | tee -a ${OUTPUT}$0_log.txt
     if ! [ -x "$(command -v Rscript)" ]; then
-        echo -e "${ECHO}[`date "+%H:%M:%S"`][ERROR] Rscript unavailable - check conda environment"
+        echo -e "${ECHO}[`date "+%H:%M:%S"`][ERROR] Rscript unavailable - check conda environment"  | tee -a ${OUTPUT}$0_log.txt
         stopFunction
     fi
-    echo -e "${ECHO}[`date "+%H:%M:%S"`][MAIN] Extracting medicc2 input format"
+    echo -e "${ECHO}[`date "+%H:%M:%S"`][MAIN] Extracting medicc2 input format" | tee -a ${OUTPUT}$0_log.txt
     ## Build output directory structure
-    Rscript scripts/qdnaseq_to_medicc_format.R ${INPUT} ${OUTPUT}input_files/ ${META}
+    Rscript scripts/qdnaseq_to_medicc_format.R ${INPUT} ${OUTPUT}input_files/ ${META} >> ${OUTPUT}$0_log.txt 2>&1
 elif [ "$TYPE" == "segment" ]; then
-    echo -e "${ECHO}[`date "+%H:%M:%S"`][INIT] Input type set to segment table"
+    echo -e "${ECHO}[`date "+%H:%M:%S"`][INIT] Input type set to segment table" | tee -a ${OUTPUT}$0_log.txt
     if ! [ -x "$(command -v Rscript)" ]; then
-        echo -e "${ECHO}[`date "+%H:%M:%S"`][ERROR] Rscript unavailable - check conda environment"
+        echo -e "${ECHO}[`date "+%H:%M:%S"`][ERROR] Rscript unavailable - check conda environment" | tee -a ${OUTPUT}$0_log.txt
         stopFunction
     fi
-    echo -e "${ECHO}[`date "+%H:%M:%S"`][MAIN] Extracting medicc2 input format"
+    echo -e "${ECHO}[`date "+%H:%M:%S"`][MAIN] Extracting medicc2 input format" | tee -a ${OUTPUT}$0_log.txt
     ## Build output directory structure
-    Rscript scripts/segment_table_to_medicc_format.R ${INPUT} ${OUTPUT}input_files/ ${META}
+    Rscript scripts/segment_table_to_medicc_format.R ${INPUT} ${OUTPUT}input_files/ ${META} >> ${OUTPUT}$0_log.txt 2>&1
 elif [ "$TYPE" == "medicc" ]; then
-    echo -e "${ECHO}[`date "+%H:%M:%S"`][INIT] Input type set to medicc"
-    cp ${INPUT} ${OUTPUT}input_files/
+    echo -e "${ECHO}[`date "+%H:%M:%S"`][INIT] Input type set to medicc" | tee -a ${OUTPUT}$0_log.txt
+    cp ${INPUT}* ${OUTPUT}input_files/
 fi
 
-echo -e "${ECHO}[`date "+%H:%M:%S"`][MAIN] Running medicc2"
-find ${OUTPUT}input_files/ \( ! -name '.*' \) -type f | xargs -P ${CORES}  -n 1 -I {} medicc2 {} ${OUTPUT}medicc2_output/${NOWGD}${TCN} ${ARGS}
+echo -e "${ECHO}[`date "+%H:%M:%S"`][MAIN] Running medicc2" | tee -a ${OUTPUT}$0_log.txt
+find ${OUTPUT}input_files/ \( ! -name '.*' \) -type f | xargs -P ${CORES}  -n 1 -I {} medicc2 {} ${OUTPUT}medicc2_output/${NOWGD}${TCN} ${ARGS} >> ${OUTPUT}$0_log.txt 2>&1
 
-echo -e "${ECHO}[`date "+%H:%M:%S"`][MAIN] Generating summary information"
+echo -e "${ECHO}[`date "+%H:%M:%S"`][MAIN] Generating summary information" | tee -a ${OUTPUT}$0_log.txt
 ## Combine trees
 cat ${OUTPUT}medicc2_output/*final_tree.new > ${OUTPUT}medicc2_output/all.trees.new
 
-echo -e "${ECHO}[`date "+%H:%M:%S"`][MAIN] Pipeline complete"
+echo -e "${ECHO}[`date "+%H:%M:%S"`][MAIN] Pipeline complete" | tee -a ${OUTPUT}$0_log.txt
 ## END

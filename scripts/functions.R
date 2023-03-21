@@ -184,7 +184,7 @@ medicc_format <- function(x,type){
         #a$chrom <- paste0("chr",a$chrom)
         a <- a[,c("sample_id","chrom","start","end","cn_a","cn_b")]
         a$cn_a[a$cn_a < 0] <- 0
-        a$cn_a[a$cn_b < 0] <- 0
+        a$cn_b[a$cn_b < 0] <- 0
     } else {
         colnames(a) <- c("chrom","start","end","cn_a","sample_id")
         #a$chrom <- paste0("chr",a$chrom)

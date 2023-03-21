@@ -11,10 +11,6 @@ require(stringr, quietly = TRUE, warn.conflicts = FALSE)
 
 source("scripts/functions.R")
 
-args[1] <- "resources/segment_table_allele_specfic_example.tsv"
-args[2] <- "resources/example_run/"
-args[3] <- "resources/mapping_file_example.tsv"
-
 # Set id cols
 metacols <- c("PATIENT_ID","SAMPLE_ID")
 segcols <- c("chromosome","start","end","segVal","sample")
@@ -68,7 +64,7 @@ norm_segs <- get_normalised_segments(data = seg_data,
 		mapping = meta.data,
 		type = type)
 
-medicc_out <- get_medicc_tables(norm_segs = norm_segs,outputdir=outfolder,write=FALSE,type=type)
+medicc_out <- get_medicc_tables(norm_segs = norm_segs,outputdir=outfolder,write=TRUE,type=type)
 
 outdir_up <- gsub("input_files/","",outfolder)
 saveRDS(norm_segs,paste0(outdir_up,"norm_segs.rds"))
