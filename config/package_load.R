@@ -5,7 +5,7 @@ for(thisPackage in listOfAllPackages) {
   
   if(thisPackage %in% rownames(installed.packages()) == FALSE) {
 	cat(paste("[install_env] Package", thisPackage, "needs installing.\n"))
-	install.packages(thisPackage, repos="https://cran.ma.imperial.ac.uk/")
+	install.packages(thisPackage, repos="https://cloud.r-project.org/")
   } else {
 	cat(paste("[install_env] Package", thisPackage, "is installed.\n"))
   }
