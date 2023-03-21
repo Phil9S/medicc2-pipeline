@@ -132,32 +132,26 @@ The medicc2 pipeline can be run on the command line using the following;
 ./run_medicc2.sh -h
 ```
 Which will list the options and help information. In the most basic implementation the `run_medicc2.sh` script requires 3 or 4 arguments to run.
-##### medicc
-```
-./run_medicc2.sh -t medicc -i input_data/ -o home/medicc2_results/
-```
 
+#### Example runs
+
+##### segment table (allele-specific)
+```
+./run_medicc2.sh -t segment -i resources/segment_table_allele_specfic_example.tsv -o resources/example_run/ -m resources/mapping_file_example.tsv
+```
+##### segment table (total)
+```
+./run_medicc2.sh -t segment -i resources/segment_table_example.tsv -o resources/example_run/ -m resources/mapping_file_example.tsv -wn
+```
 ##### qdnaseq
 ```
 ./run_medicc2.sh -t qdnaseq -i qdnaseqdata.Rds -o home/medicc2_results/ -m metadata.tsv
 ```
-
-##### segment table
+##### medicc (allele-specific)
 ```
-./run_medicc2.sh -t segment -i segment_table.tsv -o home/medicc2_results/ -m metadata.tsv
+./run_medicc2.sh -t medicc -i resources/medicc_input_as/ -o resources/example_run/
 ```
-#### Example run
-
+##### medicc (total)
 ```
-./run_medicc2.sh -t segment \
-        -i resources/segment_table_example.tsv \
-        -o resources/example_run/ \
-        -m resources/mapping_file_example.tsv \
-        -wn
-```
-
-or using SLURM job control system
-
-```
-sbatch sbatch_run_medicc2_example
+./run_medicc2.sh -t medicc -i resources/medicc_input_total/ -o resources/example_run/ -wn
 ```
