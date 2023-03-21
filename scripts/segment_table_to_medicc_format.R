@@ -11,6 +11,10 @@ require(stringr, quietly = TRUE, warn.conflicts = FALSE)
 
 source("scripts/functions.R")
 
+args[1] <- "resources/segment_table_allele_specfic_example.tsv"
+args[2] <- "resources/example_run/"
+args[3] <- "resources/mapping_file_example.tsv"
+
 # Set id cols
 metacols <- c("PATIENT_ID","SAMPLE_ID")
 segcols <- c("chromosome","start","end","segVal","sample")
@@ -33,6 +37,22 @@ if(is.character(seg_data$chromosome)){
     seg_data$chromosome <- as.numeric(seg_data$chromosome)
 }
 
+if(ncol(seg_data) == 5){
+    if(all(colnames(seg_data) %in% segcols)){
+        type <- "segment"
+    } else {
+        stop(paste0("Incorrectly named columns in segment table, column names should be ",paste0(segcols,collapse = ", ")))
+    }
+} else if(ncol(seg_data) == 6){
+    if(all(colnames(seg_data) %in% segcolsAS)){
+        type <- "segment_as"
+    } else {
+        stop(paste0("Incorrectly named columns in segment table, column names should be ",paste0(segcolsAS,collapse = ", ")))
+    }
+} else {
+    stop("Incorrect number of columns in segment table")
+}
+
 # set bin size
 bin <- 30000
 
@@ -46,9 +66,9 @@ meta.data <- meta.data[,which(colnames(meta.data) %in% metacols)]
 norm_segs <- get_normalised_segments(data = seg_data,
 		binsize=bin,
 		mapping = meta.data,
-		type = "segment")
+		type = type)
 
-medicc_out <- get_medicc_tables(norm_segs = norm_segs,outputdir=outfolder,write=TRUE)
+medicc_out <- get_medicc_tables(norm_segs = norm_segs,outputdir=outfolder,write=FALSE,type=type)
 
 outdir_up <- gsub("input_files/","",outfolder)
 saveRDS(norm_segs,paste0(outdir_up,"norm_segs.rds"))

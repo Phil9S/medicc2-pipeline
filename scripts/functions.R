@@ -9,7 +9,7 @@ get_binned_segment_table <- function(segtable = NULL,binsize = 30000,qdnaseq.for
   if(is.null(segtable)){
     stop("no segment table")
   }
-  if(!any(colnames(segtable) %in% c("chromosome","start","end","segVal","sample"))){
+  if(any(!colnames(segtable) %in% c("chromosome","start","end","segVal","sample"))){
       stop("bad column names")
   }
   # Get seq lengths
@@ -90,7 +90,7 @@ extract_qdnaseq <- function(data=NULL,value="segmented",qdnaseq.format=FALSE){
     }
 }
 
-normalised_segments <- function(binned=NULL,mapping=NULL){
+normalised_segments <- function(binned=NULL,mapping=NULL,type=NULL){
     if(is.null(binned)){
         stop("no binned data")
     }
@@ -98,13 +98,19 @@ normalised_segments <- function(binned=NULL,mapping=NULL){
         stop("no mapping file")
     }
     sample_split <- split(mapping,f = mapping$PATIENT_ID)
-    collapsed_subsets <- lapply(sample_split,FUN = function(x) subset_binned(binned,x))
+    collapsed_subsets <- lapply(sample_split,FUN = function(x) subset_binned(binned,x,type))
     return(collapsed_subsets)
 }
 
-subset_binned <- function(binned,x){
-    samples <- as.character(x$SAMPLE_ID)
+subset_binned <- function(binned,x,type){
+    if(type == "segment_as"){
+        samples <- as.character(outer(x$SAMPLE_ID,paste0(":",c("segValA","segValB")),paste0))
+    } else {
+        samples <- as.character(x$SAMPLE_ID)
+    }
+    #samples <- colnames(binned)[!colnames(binned) %in% c("chromosome","start","end")]
     binned_sub <- binned[,colnames(binned) %in% c("chromosome","start","end",samples)] %>%
+    #binned_sub <- binned %>%    
         mutate(across(where(is.numeric), round)) %>%
         unite(col = "const",4:ncol(.))
     collapsed_segments <- collapse_bins(binned_sub,samples=samples)
@@ -145,42 +151,17 @@ collapse_bins <- function(binned_sub,samples=samples){
     return(binned_sub_collapse)
 }
 
-get_normalised_segments <- function(data=NULL,mapping=NULL,type="segment",value="segmented",binsize=30000,qdnaseq.format=FALSE){
-    if(is.null(data)){
-        stop("no binned data")
-    }
-    if(is.null(mapping)){
-        stop("no mapping file")
-    }
-    if(!type %in% c("segment","qdnaseq","snp")){
-        stop("bad type")
-    }
-    switch(type,segment={
-        binned_mat <- get_binned_segment_table(segtable = data,
-                                               binsize=binsize,
-                                               qdnaseq.format=qdnaseq.format)
-    },
-    qdnaseq={
-        binned_mat <- extract_qdnaseq(data = data,
-                                      value = value,
-                                      qdnaseq.format=qdnaseq.format)        
-    },
-    snp={
-        stop("do nothing")
-    })
-    normalised_segs_tibble <- normalised_segments(binned = binned_mat,mapping = mapping)
-    normalised_segments <- as.list(normalised_segs_tibble)
-    return(normalised_segments)
-}
-
-get_medicc_tables <- function(norm_segs=NULL,write=TRUE,outputdir=NULL){
+get_medicc_tables <- function(norm_segs=NULL,write=TRUE,outputdir=NULL,type=NULL){
     if(is.null(norm_segs)){
         stop("no segs provided")
     }
     if(is.null(outputdir)){
         stop("no output dir")
     }
-    withdiploid <- lapply(norm_segs,FUN = function(x) medicc_format(x))
+    if(is.null(type)){
+        stop("no type")
+    }
+    withdiploid <- lapply(norm_segs,FUN = function(x) medicc_format(x,type))
     if(write){
         lapply(names(withdiploid),FUN = function(x){
             file_name <- x
@@ -192,22 +173,130 @@ get_medicc_tables <- function(norm_segs=NULL,write=TRUE,outputdir=NULL){
     return(withdiploid)
 }
 
-medicc_format <- function(x){
+medicc_format <- function(x,type){
     #y <- x[x$sample == x$sample[1],]
     #y$sample <- rep("diploid",nrow(y))
     #y$segVal <- as.numeric(rep(2,nrow(y)))
     #a <- rbind(x,y)
     a <- x 
-    colnames(a) <- c("chrom","start","end","cn_a","sample_id")
-    #a$chrom <- paste0("chr",a$chrom)
-    a <- a[,c("sample_id","chrom","start","end","cn_a")]
-    a$cn_a[a$cn_a < 0] <- 0
+    if(type == "segment_as"){
+        colnames(a) <- c("chrom","start","end","cn_a","cn_b","sample_id")
+        #a$chrom <- paste0("chr",a$chrom)
+        a <- a[,c("sample_id","chrom","start","end","cn_a","cn_b")]
+        a$cn_a[a$cn_a < 0] <- 0
+        a$cn_a[a$cn_b < 0] <- 0
+    } else {
+        colnames(a) <- c("chrom","start","end","cn_a","sample_id")
+        #a$chrom <- paste0("chr",a$chrom)
+        a <- a[,c("sample_id","chrom","start","end","cn_a")]
+        a$cn_a[a$cn_a < 0] <- 0
+    }
+    
     return(as.data.frame(a))
 }
 
-# segs <- read.table("resources/segment_table_example.tsv",header = T,sep = "\t")
+get_normalised_segments <- function(data=NULL,mapping=NULL,type=NULL,value="segmented",binsize=30000,qdnaseq.format=FALSE){
+    if(is.null(data)){
+        stop("no binned data")
+    }
+    if(is.null(mapping)){
+        stop("no mapping file")
+    }
+    if(is.null(type)){
+        stop("no type specfified")
+    }
+    if(!type %in% c("segment","segment_as","qdnaseq","snp")){
+        stop("bad type")
+    }
+    switch(type,
+    segment={
+        binned_mat <- get_binned_segment_table(segtable = data,
+                                               binsize=binsize,
+                                               qdnaseq.format=qdnaseq.format)
+        
+        normalised_segs_tibble <- normalised_segments(binned = binned_mat,
+                                                      mapping = mapping,
+                                                      type=type)
+    },
+    segment_as={
+        data.split <- split_alleles(data = data)
+        
+        binned_mat <- get_binned_segment_table(segtable = data.split,
+                                               binsize=binsize,
+                                               qdnaseq.format=qdnaseq.format)
+        
+        normalised_segs_tibble <- normalised_segments(binned = binned_mat,
+                                                      mapping = mapping,
+                                                      type=type)
+        
+        normalised_segs_tibble <- collapse_alleles(data = normalised_segs_tibble)
+    },
+    qdnaseq={
+        binned_mat <- extract_qdnaseq(data = data,
+                                      value = value,
+                                      qdnaseq.format=qdnaseq.format)
+        
+        normalised_segs_tibble <- normalised_segments(binned = binned_mat,
+                                                      mapping = mapping,
+                                                      type=type)
+    },
+    snp={
+        stop("do nothing")
+    })
+    
+    normalised_segments <- as.list(normalised_segs_tibble)
+    return(normalised_segments)
+}
+
+split_alleles <- function(data = NULL){
+    if(is.null(data)){
+        stop("no data")
+    }
+    data <- data %>%
+        pivot_longer(cols = c("segValA","segValB"),values_to = "segVal") %>%
+        mutate(sample = paste0(sample,":",name)) %>%
+        relocate(sample,.after = last_col()) %>%
+        select(-name) %>%
+        arrange(sample,chromosome,start,end)
+    return(data)
+}
+
+collapse_alleles <- function(data = NULL){
+    if(is.null(data)){
+        stop("no data")
+    }
+    collapse.data <- lapply(data,function(x){
+        x <- x %>%
+            separate(sample,sep = ":",into = c("sample","name")) %>%
+            pivot_wider(names_from = name,values_from = segVal) %>%
+            relocate(sample,.after = last_col()) %>%
+            arrange(sample,chromosome,start,end)
+        return(x)
+            
+    })
+    return(collapse.data)
+}
+
+# Testing
+## Load meta.data
 # meta <- read.table("resources/mapping_file_example.tsv",header = T,sep = "\t")
 # 
-# test <- get_normalised_segments(data = segs,mapping = meta,type = "segment")
-# df <- test[[2]]
-## END
+# ## Total seg input
+# segs1 <- read.table("resources/segment_table_example.tsv",header = T,sep = "\t")
+# test1 <- get_normalised_segments(data = segs1,mapping = meta,type = "segment")
+# df1 <- test1[[2]]
+# table(df1$sample)
+# 
+# ## QDNAseq input
+# segs2 <- readRDS("resources/qdnaseqmod_example_file.rds")
+# test2 <- get_normalised_segments(data = segs2,mapping = meta,type = "qdnaseq")
+# df2 <- test2[[2]]
+# table(df2$sample)
+# 
+# ## AS seg input
+# segs3 <- read.table("resources/segment_table_allele_specfic_example.tsv",header = T,sep = "\t")
+# test3 <- get_normalised_segments(data = segs3,mapping = meta,type = "segment_as")
+# df3 <- test3[[2]]
+# table(df3$sample)
+
+# END
