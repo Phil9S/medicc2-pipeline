@@ -4,10 +4,10 @@ args = commandArgs(trailingOnly=TRUE)
 options(scipen=999)
 
 # Required packages
-require(GenomicRanges, quietly = TRUE, warn.conflicts = FALSE)
-require(dplyr, quietly = TRUE, warn.conflicts = FALSE)
-require(tidyr, quietly = TRUE, warn.conflicts = FALSE)
-require(stringr, quietly = TRUE, warn.conflicts = FALSE)
+suppressMessages(require(GenomicRanges, quietly = TRUE, warn.conflicts = FALSE))
+suppressMessages(require(dplyr, quietly = TRUE, warn.conflicts = FALSE))
+suppressMessages(require(tidyr, quietly = TRUE, warn.conflicts = FALSE))
+suppressMessages(require(stringr, quietly = TRUE, warn.conflicts = FALSE))
 
 source("scripts/functions.R")
 
@@ -54,6 +54,9 @@ bin <- 30000
 
 # Set output folder
 outfolder <- args[2]
+
+# Set cores
+cores <- args[5]
 
 # Load sample meta.data
 meta.data <- read.table(args[3],header = TRUE,sep = "\t")

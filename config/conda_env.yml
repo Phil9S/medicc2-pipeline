@@ -13,5 +13,6 @@ dependencies:
   - r-base
   - r-dplyr
   - bioconductor-genomicranges
+  - r-doparallel
 prefix: /Users/smith10/resources/miniconda3/envs/medicc2
 

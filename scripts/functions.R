@@ -1,8 +1,12 @@
-library(GenomicRanges)
-library(dplyr)
-library(tidyr)
-#library(data.table)
-library(stringr)
+suppressMessages(library(GenomicRanges))
+suppressMessages(library(dplyr))
+suppressMessages(library(tidyr))
+suppressMessages(library(stringr))
+suppressMessages(library(doParallel))
+
+# Set options
+options(dplyr.summarise.inform = FALSE)
+options(warn=-1)
 
 ## Segment to bin format
 get_binned_segment_table <- function(segtable = NULL,binsize = 30000,qdnaseq.format=FALSE){
@@ -14,24 +18,19 @@ get_binned_segment_table <- function(segtable = NULL,binsize = 30000,qdnaseq.for
   }
   # Get seq lengths
   seqlengths <- unlist(lapply(split(segtable,f=segtable$chromosome),function(x) max(x$end)))
-  
   # Make Granges from data.frame format
   table_gr <- makeGRangesFromDataFrame(segtable,keep.extra.columns = T,ignore.strand = T)
-  
   # Generate tiled genome of given bin size and seq.length
   tiles <- unlist(tileGenome(seqlengths = seqlengths,tilewidth = binsize))
   
   # Merge bins and segment tables to form annotated bins
   #binned <- as.data.frame(mergeByOverlaps(tiles,table_gr))
-  
   binned <- mergeByOverlaps(tiles,table_gr)
   binned <- data.frame(binned$tiles,binned$table_gr,binned$segVal,binned$sample)
   
-  # binned_mat <- as.data.frame(binned %>%
-  #                               select(-c(contains("table_gr"),"tiles.strand","tiles.width")) %>%
-  #                               pivot_wider(values_from = "segVal",names_from = "sample",) %>%
-  #                               dplyr::rename(c("chromosome"="tiles.seqnames","start"="tiles.start","end"="tiles.end")))
-  
+  cat(paste0(args[4],"[",format(Sys.time(),
+    "%H:%M:%S"),"]","[MAIN] Binning samples across ",binsize/1000,"kb bins (this may take some time)\n"))
+
   binned_mat <- as.data.frame(binned %>%
                                   select(-c(contains(".1"),"strand","width","binned.segVal","binned.sample")) %>%
                                   distinct() %>%
@@ -98,11 +97,25 @@ normalised_segments <- function(binned=NULL,mapping=NULL,type=NULL){
         stop("no mapping file")
     }
     sample_split <- split(mapping,f = mapping$PATIENT_ID)
-    collapsed_subsets <- lapply(sample_split,FUN = function(x) subset_binned(binned,x,type))
+    
+    ## Set up parallel compute
+    if(cores > 1){
+	cat(paste0(args[4],"[",format(Sys.time(),"%H:%M:%S"),"]","[MAIN] Running parallel on ",cores," cores\n"))
+        doParallel::registerDoParallel(cores=cores)
+        collapsed_subsets <- foreach::foreach(x=sample_split) %dopar% {
+            s <- subset_binned(binned,x,type)
+        }
+	stopImplicitCluster()
+        names(collapsed_subsets) <- names(sample_split)
+    } else {
+        collapsed_subsets <- lapply(sample_split,FUN = function(x) subset_binned(binned,x,type))
+    }
     return(collapsed_subsets)
 }
 
+
 subset_binned <- function(binned,x,type){
+    cat(paste0(args[4],"[",format(Sys.time(),"%H:%M:%S"),"]","[MAIN] Normalising segments for ",unique(x$PATIENT_ID),"\n"))
     if(type == "segment_as"){
         samples <- as.character(outer(x$SAMPLE_ID,paste0(":",c("segValA","segValB")),paste0))
     } else {
@@ -220,7 +233,6 @@ get_normalised_segments <- function(data=NULL,mapping=NULL,type=NULL,value="segm
     },
     segment_as={
         data.split <- split_alleles(data = data)
-        
         binned_mat <- get_binned_segment_table(segtable = data.split,
                                                binsize=binsize,
                                                qdnaseq.format=qdnaseq.format)

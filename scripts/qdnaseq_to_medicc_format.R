@@ -4,10 +4,10 @@ args = commandArgs(trailingOnly=TRUE)
 options(scipen=999)
 
 # Required packages
-require(GenomicRanges, quietly = TRUE, warn.conflicts = FALSE)
-require(dplyr, quietly = TRUE, warn.conflicts = FALSE)
-require(tidyr, quietly = TRUE, warn.conflicts = FALSE)
-require(stringr, quietly = TRUE, warn.conflicts = FALSE)
+suppressMessages(require(GenomicRanges, quietly = TRUE, warn.conflicts = FALSE))
+suppressMessages(require(dplyr, quietly = TRUE, warn.conflicts = FALSE))
+suppressMessages(require(tidyr, quietly = TRUE, warn.conflicts = FALSE))
+suppressMessages(require(stringr, quietly = TRUE, warn.conflicts = FALSE))
 
 source("scripts/functions.R")
 
@@ -17,13 +17,19 @@ segcols <- c("chromosome","start","end","segVal","sample")
 segcolsAS <- c("chromosome","start","end","segValA","segValB","sample")
 
 # Load sample CN
-seg_data <- readRDS(args[1])
+seg_data <- invisible(readRDS(args[1]))
+
+# Set type to total
+type <- "segment"
 
 # set bin size
 bin <- 30000
 
 # Set output folder
 outfolder <- args[2]
+
+# Set cores
+cores=args[5]
 
 # Load sample meta.data
 meta.data <- read.table(args[3],header = TRUE,sep = "\t")
@@ -34,7 +40,7 @@ norm_segs <- get_normalised_segments(data = seg_data,
 		mapping = meta.data,
 		type = "qdnaseq")
 
-medicc_out <- get_medicc_tables(norm_segs = norm_segs,outputdir=outfolder,write=TRUE)
+medicc_out <- get_medicc_tables(norm_segs = norm_segs,outputdir=outfolder,write=TRUE,type=type)
 
 outdir_up <- gsub("input_files/","",outfolder)
 saveRDS(norm_segs,paste0(outdir_up,"norm_segs.rds"))

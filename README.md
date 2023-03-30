@@ -116,7 +116,7 @@ Which will list the options and help information.
 ```
 #### qdnaseq
 ```
-./run_medicc2.sh -t qdnaseq -i qdnaseqdata.Rds -o home/medicc2_results/ -m metadata.tsv
+./run_medicc2.sh -t qdnaseq -i resources/qdnaseqmod_example_file.rds -o resources/example_run/ -m resources/mapping_file_example.tsv
 ```
 #### medicc (allele-specific)
 ```
